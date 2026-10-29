@@ -185,7 +185,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .icongrid button{aspect-ratio:1;max-width:100%;border-radius:12px;border:2px solid transparent;background:var(--surface);color:var(--fg);display:flex;align-items:center;justify-content:center}
 .icongrid button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .icongrid button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.catseg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:12px;padding:4px}
+.catseg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface-2);border-radius:12px;padding:4px}
 .catseg button{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:9px;font-size:15px;font-weight:600;color:var(--muted)}
 .catseg button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 .catseg button .c{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 7px;font-variant-numeric:tabular-nums}
@@ -628,6 +628,14 @@ function editWorkout(w){
 }
 setInterval(()=>{if(!workouts.active)return;const t=fmtClock(Date.now()-workouts.active);document.querySelectorAll(".wkclock").forEach(el=>{el.textContent=t})},1000);
 
+/* ---------- theme ---------- */
+function curTheme(){const t=lsGet("satzbuch.theme");return t==="light"||t==="dark"?t:"auto"}
+function applyTheme(t){const r=document.documentElement;if(t==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t);
+  const metas=document.querySelectorAll('meta[name="theme-color"]');
+  metas.forEach(m=>{if(!m.dataset.orig)m.dataset.orig=m.getAttribute("content");m.setAttribute("content",t==="auto"?m.dataset.orig:(t==="dark"?"#0E0F12":"#F3F4F6"))})}
+function setTheme(t){lsSet("satzbuch.theme",t);applyTheme(t)}
+applyTheme(curTheme());
+
 /* ---------- settings ---------- */
 function renderSettings(){
   $("#topbar").className="topbar sub";$("#topbar").innerHTML='<button class="back" id="setBack">‹ Zurück</button><h1>Einstellungen</h1>';
@@ -635,11 +643,13 @@ function renderSettings(){
   const where=mode==="db"?"Deine Daten sind in deinem Claude-Konto gespeichert und nur für dich sichtbar.":"Deine Daten sind nur auf diesem Gerät gespeichert. Mach ab und zu ein Backup, z. B. in die Dateien-App.";
   const total=exercises.reduce((a,e)=>a+e.sets.length,0);
   $("#main").innerHTML='<div class="stack"><div class="card"><div class="srow"><span>Standard-Pause</span><span class="mini"><button id="rMinus" aria-label="15 Sekunden kürzer">−</button><b id="rVal">'+fmtTime(settings.rest)+'</b><button id="rPlus" aria-label="15 Sekunden länger">+</button></span></div>'+
+  '<div class="srow"><span>Darstellung</span><div class="catseg" id="themeSeg" style="min-width:0;flex:0 1 230px">'+[["auto","Auto"],["light","Hell"],["dark","Dunkel"]].map(([k,l])=>'<button data-th="'+k+'" class="'+(curTheme()===k?"on":"")+'">'+l+'</button>').join("")+'</div></div>'+
   '<div class="srow"><span>Gespeichert</span><span class="muted num">'+exercises.length+' Übungen · '+total+' Sätze</span></div></div>'+
   '<div class="card stack"><div class="label">Datensicherung</div><p class="muted small" style="margin:0">'+where+'</p><button class="btn block" id="exp">Backup exportieren</button><label class="btn block" for="impFile">Backup importieren</label><input type="file" id="impFile" accept=".json,application/json" hidden></div>'+
   '<div class="card"><div class="label">Auf dem iPhone wie eine App nutzen</div><ol class="howto"><li>Seite in Safari öffnen</li><li>Teilen-Symbol antippen</li><li>„Zum Home-Bildschirm“ wählen</li><li>Ab dann immer über das Symbol starten, da Safari und Home-Bildschirm getrennte Daten haben</li></ol></div></div>';
   let saveT2;const setRest=v=>{settings.rest=Math.max(15,Math.min(600,v));$("#rVal").textContent=fmtTime(settings.rest);clearTimeout(saveT2);saveT2=setTimeout(saveSettings,600)};
   $("#rMinus").onclick=()=>setRest(settings.rest-15);$("#rPlus").onclick=()=>setRest(settings.rest+15);
+  document.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{setTheme(b.dataset.th);document.querySelectorAll("[data-th]").forEach(x=>x.classList.toggle("on",x===b))});
   $("#exp").onclick=exportData;$("#impFile").onchange=importData;
 }
 async function exportData(){
