@@ -67,7 +67,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .topbar.sub h1{font-size:20px;letter-spacing:-.01em}
 .back{display:flex;align-items:center;gap:2px;color:var(--accent);font-size:17px;padding:6px 8px 6px 0}
 .iconbtn{color:var(--accent);font-size:15px;font-weight:600;padding:8px 4px}
-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px calc(var(--tabh) + 84px);
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px calc(var(--tabh) + 100px);
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .stack{display:flex;flex-direction:column;gap:14px}
 
@@ -156,7 +156,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .adj{display:flex;justify-content:center;gap:10px}
 
 /* timer pill */
-.pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 12px);
+.pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 34px);
   display:flex;align-items:center;gap:10px;background:var(--fg);color:var(--bg);border-radius:999px;padding:9px 10px 9px 16px;box-shadow:0 6px 20px rgba(0,0,0,.22);z-index:20;max-width:calc(100% - 32px)}
 .pill b{font-size:18px;font-variant-numeric:tabular-nums}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--rest)}
@@ -170,6 +170,27 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);height:var(--tabh)}
 .tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted)}
 .tabs button.on{color:var(--accent)}
+.tabs button.tabtimer{position:relative;color:var(--rest)}
+.tabs button.tabtimer .fab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:62px;height:62px;border-radius:50%;background:var(--rest);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid var(--bg);box-shadow:0 4px 14px rgba(217,98,43,.45)}
+.tabs button.tabtimer .fab svg{width:28px;height:28px;stroke-width:2.1}
+.tabs button.tabtimer .fab b{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.tabs button.tabtimer .lbl{margin-top:30px}
+.tabs button.tabtimer.on .fab{box-shadow:0 0 0 3px var(--rest-soft),0 4px 14px rgba(217,98,43,.45)}
+.tabs button.tabtimer.running .fab{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 4px 14px rgba(217,98,43,.45)}50%{box-shadow:0 0 0 7px var(--rest-soft),0 4px 14px rgba(217,98,43,.45)}}
+.exicon{flex:none;width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center}
+.exicon svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.exicon.m{background:var(--surface-2);color:var(--fg)}
+.icongrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.icongrid button{aspect-ratio:1;max-width:100%;border-radius:12px;border:2px solid transparent;background:var(--surface);color:var(--fg);display:flex;align-items:center;justify-content:center}
+.icongrid button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icongrid button.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.catseg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:12px;padding:4px}
+.catseg button{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:9px;font-size:15px;font-weight:600;color:var(--muted)}
+.catseg button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.catseg button .c{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.catseg button.on .c{background:var(--accent-soft);color:var(--accent)}
+.addbtn.ghost{background:transparent;color:var(--accent);border:1.5px dashed var(--line)}
 .tabs svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* sheet / confirm */
@@ -199,7 +220,7 @@ ol.howto{margin:6px 0 0;padding-left:20px;color:var(--muted);font-size:15px}
 <div class="pill" id="pill" hidden></div>
 <nav class="tabs" aria-label="Navigation"><div class="in">
   <button data-tab="list" class="on"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Übungen</button>
-  <button data-tab="timer"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>Timer</button>
+  <button data-tab="timer" class="tabtimer" aria-label="Pausentimer"><span class="fab" id="fab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg></span><span class="lbl">Timer</span></button>
   <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Einstellungen</button>
 </div></nav>
 <div id="overlay"></div>
@@ -219,7 +240,7 @@ let exercises=[];            // {id,name,createdAt,sets:[{id,ts,w,r}]}
 let settings={rest:180};
 let mode="loading";          // loading | db | local
 let col=null;                // db collection ref
-const ui={tab:"list",detail:null,pane:"today",w:"",r:"",confirm:null};
+const ui={tab:"list",detail:null,pane:"today",w:"",r:"",confirm:null,cat:"free"};
 
 /* ---------- storage ---------- */
 const queues={};
@@ -231,7 +252,7 @@ function queue(id,fn){
 }
 function persistLocal(){lsSet(LS_KEY,{exercises,settings})}
 function saveExercise(ex){
-  if(mode==="db"){const body={kind:"exercise",name:ex.name,createdAt:ex.createdAt,sets:ex.sets};queue(ex.id,()=>col.doc(ex.id).set(body))}
+  if(mode==="db"){const body={kind:"exercise",name:ex.name,cat:ex.cat,icon:ex.icon||null,createdAt:ex.createdAt,sets:ex.sets};queue(ex.id,()=>col.doc(ex.id).set(body))}
   else persistLocal();
 }
 function removeExercise(id){
@@ -242,7 +263,7 @@ function saveSettings(){
 }
 function startLocal(){
   mode="local";const d=lsGet(LS_KEY);
-  if(d){exercises=d.exercises||[];settings=Object.assign({rest:180},d.settings||{})}
+  if(d){exercises=(d.exercises||[]).map(e=>Object.assign(e,{cat:e.cat==="machine"||e.cat==="free"?e.cat:guessCat(e.name)}));settings=Object.assign({rest:180},d.settings||{})}
   render();
 }
 async function init(){
@@ -257,7 +278,7 @@ async function init(){
     const ex=[];let st=null;
     snap.docs.forEach(d=>{const v=d.data();if(!v)return;
       if(d.id==="settings")st=v;
-      else if(v.kind==="exercise")ex.push({id:d.id,name:v.name,createdAt:v.createdAt||0,sets:Array.isArray(v.sets)?v.sets.slice():[]});
+      else if(v.kind==="exercise")ex.push({id:d.id,name:v.name,cat:v.cat==="machine"||v.cat==="free"?v.cat:guessCat(v.name),icon:v.icon||null,createdAt:v.createdAt||0,sets:Array.isArray(v.sets)?v.sets.slice():[]});
     });
     exercises=ex;if(st&&st.rest)settings.rest=st.rest;
     render(true);
@@ -278,6 +299,33 @@ const e1rm=(w,r)=>r<=1?w:w*(1+r/30);
 function byDay(sets){const m=new Map();sets.slice().sort((a,b)=>a.ts-b.ts).forEach(s=>{const k=dayKey(s.ts);if(!m.has(k))m.set(k,[]);m.get(k).push(s)});return m}
 function lastTs(ex){return ex.sets.length?Math.max(...ex.sets.map(s=>s.ts)):0}
 function getEx(id){return exercises.find(e=>e.id===id)}
+const ICONS={
+  barbell:{t:"Langhantel",d:'<path d="M2 12h20"/><rect x="5" y="7" width="2.6" height="10" rx="1"/><rect x="16.4" y="7" width="2.6" height="10" rx="1"/><rect x="2.6" y="9" width="2" height="6" rx=".8"/><rect x="19.4" y="9" width="2" height="6" rx=".8"/>'},
+  dumbbell:{t:"Kurzhantel",d:'<path d="M8 12h8"/><rect x="4.5" y="7.5" width="3.5" height="9" rx="1.2"/><rect x="16" y="7.5" width="3.5" height="9" rx="1.2"/><path d="M3 10v4M21 10v4"/>'},
+  kettlebell:{t:"Kettlebell",d:'<path d="M8.5 9.5a3.5 3.5 0 1 1 7 0"/><path d="M7.2 9.5h9.6"/><path d="M6.5 13.5a5.5 5.5 0 0 0 11 0 5 5 0 0 0-1-3H7.5a5 5 0 0 0-1 3z"/><path d="M8 20.5h8"/>'},
+  machine:{t:"Gewichtsblock",d:'<path d="M6 3v18M18 3v18M4 3h16"/><rect x="8" y="10" width="8" height="2.2" rx=".5"/><rect x="8" y="13.4" width="8" height="2.2" rx=".5"/><rect x="8" y="16.8" width="8" height="2.2" rx=".5"/><path d="M12 3v7"/><path d="M16 14.5h2.5"/>'},
+  cable:{t:"Kabelzug",d:'<circle cx="12" cy="5" r="2.2"/><path d="M12 7.2v8.3"/><path d="M8.5 18.5c0-1.6 1.6-3 3.5-3s3.5 1.4 3.5 3"/><path d="M7.5 18.5h9"/><path d="M4 3h16"/>'},
+  pullup:{t:"Klimmzug/Dips",d:'<path d="M3 4h18"/><path d="M7 4v4M17 4v4"/><circle cx="12" cy="9.5" r="1.8"/><path d="M7 8l3.5 4.5h3L17 8"/><path d="M12 12.5v4.5M12 17l-2 4M12 17l2 4"/>'},
+  bench:{t:"Bank",d:'<rect x="3" y="11" width="18" height="3" rx="1.2"/><path d="M6 14v6M18 14v6M4 20h4M16 20h4"/><path d="M5 7h14"/><path d="M7 5v4M17 5v4"/>'},
+  leg:{t:"Beine",d:'<path d="M9 3l1.5 8L7 17.5h4"/><path d="M10.5 11l3.5 3.5V21"/><path d="M14 21h4"/><path d="M15 3l-1 5"/>'},
+  core:{t:"Bauch",d:'<rect x="7" y="4" width="4.3" height="4.3" rx="1.4"/><rect x="12.7" y="4" width="4.3" height="4.3" rx="1.4"/><rect x="7" y="9.85" width="4.3" height="4.3" rx="1.4"/><rect x="12.7" y="9.85" width="4.3" height="4.3" rx="1.4"/><rect x="7" y="15.7" width="4.3" height="4.3" rx="1.4"/><rect x="12.7" y="15.7" width="4.3" height="4.3" rx="1.4"/>'},
+  cardio:{t:"Ausdauer",d:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M5.5 12h3l1.5-2.5 2 5 1.5-2.5h5"/>'},
+};
+const MACHINE_RE=/maschine|machine|latzug|lat-?zug|kabel|cable|seilzug|beinpresse|beinstreck|beinbeug|leg ?press|leg ?curl|leg ?ext|butterfly|pec ?deck|smith|multipresse|hackenschmidt|hack ?squat|adduktor|abduktor|rudermaschine|brustpresse|schulterpresse|wadenmaschine|crossover|pulldown|pushdown|face ?pull/i;
+function guessCat(n){return MACHINE_RE.test(n||"")?"machine":"free"}
+function autoIcon(n,cat){n=(n||"").toLowerCase();
+  if(/kettlebell|\bkb\b/.test(n))return"kettlebell";
+  if(/klimmz|pull-?up|chin-?up|dips/.test(n))return"pullup";
+  if(/bauch|crunch|plank|sit-?up|abs\b|core|beinheben/.test(n))return"core";
+  if(/lauf|cardio|rad\b|fahrrad|bike|crosstrainer|stepper|rudergerät|ergometer/.test(n))return"cardio";
+  if(/latzug|lat-?zug|kabel|cable|seilzug|face ?pull|pushdown|pulldown|crossover|trizepsdrücken am/.test(n))return"cable";
+  if(/beinpresse|beinstreck|beinbeug|leg|wade|adduktor|abduktor|hack/.test(n))return cat==="machine"?"leg":"barbell";
+  if(/kurzhantel|\bkh\b|dumbbell|curl|seitheben|fliegende|arnold|konzentration|hammer/.test(n))return"dumbbell";
+  if(/hip ?thrust|bank\b|bench/.test(n)&&cat!=="machine")return"bench";
+  if(cat==="machine")return"machine";
+  return"barbell"}
+function iconKey(ex){return ICONS[ex.icon]?ex.icon:autoIcon(ex.name,ex.cat)}
+function iconSvg(k){return'<svg viewBox="0 0 24 24" aria-hidden="true">'+ICONS[k].d+'</svg>'}
 function summary(sets){const out=[];let cur=null;
   sets.forEach(s=>{if(cur&&cur.w===s.w)cur.r.push(s.r);else{cur={w:s.w,r:[s.r]};out.push(cur)}});
   return out.map(g=>fmtKg(g.w)+" kg × "+g.r.join(", ")).join(" · ")}
@@ -297,7 +345,7 @@ function confirmSheet(title,text,okLabel,onOk){
 function render(fromSnap){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===ui.tab));
   const active=document.activeElement, keepId=active&&active.id, sel=active&&active.selectionStart;
-  if(fromSnap&&keepId&&/^(inW|inR|newName)$/.test(keepId)){ // don't clobber inputs while typing
+  if(fromSnap&&keepId&&/^(inW|inR)$/.test(keepId)){ // don't clobber inputs while typing
     if(ui.tab==="list"&&!ui.detail){renderListBody();return}
     if(ui.detail){renderDetailParts();return}
   }
@@ -311,35 +359,60 @@ function render(fromSnap){
 function renderList(){
   $("#topbar").className="topbar";
   $("#topbar").innerHTML='<h1>Übungen</h1>';
-  $("#main").innerHTML='<div class="stack"><button class="addbtn" id="addBtn"><span>+</span>Übung hinzufügen</button><div id="listBody"></div></div>';
-  $("#addBtn").onclick=addSheet;
+  $("#main").innerHTML='<div class="stack"><div class="catseg" role="tablist" id="catSeg"></div><div id="listBody"></div></div>';
   renderListBody();
 }
 function renderListBody(){
   const body=$("#listBody");if(!body)return;
+  const seg=$("#catSeg");
+  if(seg){const cnt=c=>exercises.filter(e=>e.cat===c).length;
+    seg.innerHTML=[["free","Freihantel"],["machine","Maschine"]].map(([k,l])=>'<button role="tab" aria-selected="'+(ui.cat===k)+'" class="'+(ui.cat===k?"on":"")+'" data-cat="'+k+'">'+l+(mode!=="loading"?' <span class="c">'+cnt(k)+'</span>':'')+'</button>').join("");
+    seg.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ui.cat=b.dataset.cat;lsSet("satzbuch.cat",ui.cat);renderListBody()})}
   if(mode==="loading"){body.innerHTML='<p class="muted small">Lädt deine Übungen …</p>';return}
-  if(!exercises.length){
-    const sug=["Bankdrücken","Kniebeugen","Kreuzheben","Schulterdrücken","Klimmzüge","Rudern"];
-    body.innerHTML='<div class="card empty"><h2>Noch keine Übungen</h2><p>Leg oben deine erste Übung an oder tippe auf einen Vorschlag.</p><div class="chips" style="justify-content:center">'+sug.map(s=>'<button class="chip" data-sug="'+esc(s)+'">+ '+esc(s)+'</button>').join("")+'</div></div>';
-    body.querySelectorAll("[data-sug]").forEach(b=>b.onclick=()=>addExercise(b.dataset.sug));return}
-  const list=exercises.slice().sort((a,b)=>(lastTs(b)||b.createdAt)-(lastTs(a)||a.createdAt));
-  body.innerHTML='<div class="list">'+list.map(ex=>{
-    const m=byDay(ex.sets);const keys=[...m.keys()];const lk=keys[keys.length-1];
-    const meta=lk?summary(m.get(lk)):"Noch kein Satz eingetragen";
-    return '<button class="row" data-id="'+ex.id+'"><div class="main"><div class="name">'+esc(ex.name)+'</div><div class="meta num">'+esc(meta)+'</div></div><span class="chev">›</span></button>'}).join("")+'</div>';
-  body.querySelectorAll(".row").forEach(r=>r.onclick=()=>openDetail(r.dataset.id));
+  const label=ui.cat==="machine"?"Maschine":"Freihantel";
+  const items=exercises.filter(e=>e.cat===ui.cat);
+  const addBtn='<button class="addbtn'+(items.length?" ghost":"")+'" id="addBtn"><span>+</span>Übung hinzufügen</button>';
+  if(!items.length){
+    const sug=ui.cat==="machine"?["Latzug","Beinpresse","Brustpresse","Beinstrecker","Kabelrudern","Butterfly"]:["Bankdrücken","Kniebeugen","Kreuzheben","Schulterdrücken","Kurzhantel-Curls","Klimmzüge"];
+    body.innerHTML='<div class="stack"><div class="card empty"><h2>Noch keine '+label+'-Übungen</h2><p>Tippe auf einen Vorschlag oder leg unten eine eigene Übung an.</p><div class="chips" style="justify-content:center">'+sug.filter(n=>!exercises.some(e=>e.name.toLowerCase()===n.toLowerCase())).map(n=>'<button class="chip" data-sug="'+esc(n)+'">+ '+esc(n)+'</button>').join("")+'</div></div>'+addBtn+'</div>';
+    body.querySelectorAll("[data-sug]").forEach(b=>b.onclick=()=>addExercise(b.dataset.sug,ui.cat,null));
+  }else{
+    const list=items.slice().sort((a,b)=>(lastTs(b)||b.createdAt)-(lastTs(a)||a.createdAt));
+    body.innerHTML='<div class="stack"><div class="list">'+list.map(ex=>{
+      const m=byDay(ex.sets);const keys=[...m.keys()];const lk=keys[keys.length-1];
+      const meta=lk?summary(m.get(lk)):"Noch kein Satz eingetragen";
+      return '<button class="row" data-id="'+ex.id+'"><span class="exicon'+(ex.cat==="machine"?" m":"")+'">'+iconSvg(iconKey(ex))+'</span><div class="main"><div class="name">'+esc(ex.name)+'</div><div class="meta num">'+esc(meta)+'</div></div><span class="chev">›</span></button>'}).join("")+'</div>'+addBtn+'</div>';
+    body.querySelectorAll(".row").forEach(r=>r.onclick=()=>openDetail(r.dataset.id));
+  }
+  $("#addBtn").onclick=addSheet;
+}
+function exFormHtml(name,cat,icon){
+  return '<input type="text" id="exName" maxlength="60" placeholder="Name, z. B. Bankdrücken" enterkeyhint="done" aria-label="Name der Übung" value="'+esc(name)+'">'+
+  '<div><div class="label" style="margin-bottom:6px">Kategorie</div><div class="catseg" id="exCat">'+[["free","Freihantel"],["machine","Maschine"]].map(([k,l])=>'<button type="button" data-c="'+k+'" class="'+(cat===k?"on":"")+'">'+l+'</button>').join("")+'</div></div>'+
+  '<div><div class="label" style="margin-bottom:6px">Symbol</div><div class="icongrid" id="exIcons">'+Object.keys(ICONS).map(k=>'<button type="button" data-i="'+k+'" aria-label="'+ICONS[k].t+'" title="'+ICONS[k].t+'">'+iconSvg(k)+'</button>').join("")+'</div></div>';
+}
+function bindExForm(s,st,onChange){
+  const inp=s.querySelector("#exName");
+  const paint=()=>{s.querySelectorAll("#exCat [data-c]").forEach(b=>b.classList.toggle("on",b.dataset.c===st.cat));
+    const k=st.icon||autoIcon(inp.value,st.cat);s.querySelectorAll("#exIcons [data-i]").forEach(b=>b.classList.toggle("on",b.dataset.i===k));onChange&&onChange()};
+  inp.addEventListener("input",()=>{if(!st.catTouched&&st.autoCat)st.cat=guessCat(inp.value);paint()});
+  s.querySelectorAll("#exCat [data-c]").forEach(b=>b.onclick=()=>{st.cat=b.dataset.c;st.catTouched=true;paint()});
+  s.querySelectorAll("#exIcons [data-i]").forEach(b=>b.onclick=()=>{st.icon=b.dataset.i;paint()});
+  paint();return inp;
 }
 function addSheet(){
-  sheet('<h3>Neue Übung</h3><form id="addForm" class="stack" autocomplete="off"><input type="text" id="newName" maxlength="60" placeholder="Name, z. B. Bankdrücken" enterkeyhint="done" aria-label="Name der Übung"><button class="btn primary block" type="submit" id="addOk" disabled>Hinzufügen</button><button class="btn block" type="button" id="cNo">Abbrechen</button></form>',
-  s=>{const inp=s.querySelector("#newName"),ok=s.querySelector("#addOk");
-    inp.oninput=()=>ok.disabled=!inp.value.trim();
+  const st={cat:ui.cat,icon:null,autoCat:false};
+  sheet('<h3>Neue Übung</h3><form id="addForm" class="stack" autocomplete="off">'+exFormHtml("",st.cat,null)+'<button class="btn primary block" type="submit" id="addOk" disabled>Hinzufügen</button><button class="btn block" type="button" id="cNo">Abbrechen</button></form>',
+  s=>{const ok=s.querySelector("#addOk");const inp=bindExForm(s,st,()=>{ok.disabled=!s.querySelector("#exName").value.trim()});
     s.querySelector("#cNo").onclick=closeSheet;
-    s.querySelector("#addForm").onsubmit=e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;if(addExercise(v))closeSheet()};
+    s.querySelector("#addForm").onsubmit=e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;if(addExercise(v,st.cat,st.icon))closeSheet()};
     inp.focus()});
 }
-function addExercise(name){
+function addExercise(name,cat,icon){
   if(exercises.some(e=>e.name.toLowerCase()===name.toLowerCase())){toast("„"+name+"“ gibt es schon.");return false}
-  const ex={id:"ex-"+uid(),name,createdAt:Date.now(),sets:[]};exercises.push(ex);saveExercise(ex);render();return true;
+  const ex={id:"ex-"+uid(),name,cat:cat||guessCat(name),icon:icon||null,createdAt:Date.now(),sets:[]};exercises.push(ex);saveExercise(ex);
+  if(ex.cat!==ui.cat){ui.cat=ex.cat;lsSet("satzbuch.cat",ui.cat)}
+  render();return true;
 }
 function openDetail(id){ui.detail=id;ui.pane="today";ui.w="";ui.r="";render();$("#main").scrollTop=0}
 
@@ -420,8 +493,12 @@ function historyHtml(ex){
   return '<div class="stack">'+stats+chart+list+'</div>';
 }
 function editSheet(ex){
-  sheet('<h3>Übung bearbeiten</h3><input type="text" id="renameIn" maxlength="60" value="'+esc(ex.name)+'" aria-label="Name der Übung"><button class="btn primary block" id="renameOk">Speichern</button><button class="btn danger block" id="delEx">Übung löschen</button><button class="btn block" id="cNo">Abbrechen</button>',
-  s=>{s.querySelector("#renameOk").onclick=()=>{const v=s.querySelector("#renameIn").value.trim();if(!v)return;ex.name=v;saveExercise(ex);closeSheet();render()};
+  const st={cat:ex.cat,icon:ex.icon||null,autoCat:false};
+  sheet('<h3>Übung bearbeiten</h3><form id="editForm" class="stack" autocomplete="off">'+exFormHtml(ex.name,st.cat,st.icon)+'<button class="btn primary block" type="submit">Speichern</button><button class="btn danger block" type="button" id="delEx">Übung löschen</button><button class="btn block" type="button" id="cNo">Abbrechen</button></form>',
+  s=>{const inp=bindExForm(s,st);
+    s.querySelector("#editForm").onsubmit=e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;
+      if(exercises.some(o=>o!==ex&&o.name.toLowerCase()===v.toLowerCase())){toast("„"+v+"“ gibt es schon.");return}
+      ex.name=v;ex.cat=st.cat;ex.icon=st.icon;saveExercise(ex);if(ui.cat!==ex.cat){ui.cat=ex.cat;lsSet("satzbuch.cat",ui.cat)}closeSheet();render()};
     s.querySelector("#cNo").onclick=closeSheet;
     s.querySelector("#delEx").onclick=()=>{closeSheet();confirmSheet("„"+ex.name+"“ löschen?","Die Übung und alle "+ex.sets.length+" eingetragenen Sätze werden entfernt.","Endgültig löschen",()=>{exercises=exercises.filter(e=>e.id!==ex.id);removeExercise(ex.id);ui.detail=null;render()})}});
 }
@@ -440,10 +517,13 @@ function timerResume(){unlockAudio();T.endAt=Date.now()+T.left*1000;T.state="run
 function timerReset(){T={state:"idle",dur:0,endAt:0,left:0};saveT();wakeOff();render()}
 function timerAdd(d){if(T.state==="run"){T.endAt=Math.max(Date.now()+1000,T.endAt+d*1000);T.dur=Math.max(1,T.dur+d)}else if(T.state==="pause"){T.left=Math.max(1,T.left+d);T.dur=Math.max(1,T.dur+d)}else{lastDur=Math.max(15,(lastDur||settings.rest)+d)}saveT();render()}
 function loop(){clearInterval(tick);tick=setInterval(()=>{if(T.state==="run"&&remaining()<=0){T.state="done";saveT();beep();wakeOff();clearInterval(tick);render();return}updateTimerViews()},250)}
-function updateTimerViews(){const r=remaining();const p=$("#pillTime");if(p)p.textContent=fmtTime(r);
+function updateTimerViews(){const r=remaining();const p=$("#pillTime");if(p)p.textContent=fmtTime(r);const fb=$("#fabTime");if(fb)fb.textContent=fmtTime(r);
   const d=$("#dialTime");if(d){d.textContent=fmtTime(r);const c=$("#dialArc");if(c){const dur=T.state==="idle"?(lastDur||settings.rest):T.dur||1;const f=T.state==="idle"?1:Math.max(0,Math.min(1,r/dur));c.style.strokeDashoffset=(1-f)*CIRC}}}
 const CIRC=2*Math.PI*54;
-function renderPill(){const p=$("#pill");if(T.state==="idle"||ui.tab==="timer"){p.hidden=true;return}
+function renderFab(){const tb=document.querySelector(".tabtimer");if(!tb)return;const active=T.state==="run"||T.state==="pause"||T.state==="done";
+  tb.classList.toggle("running",T.state==="run");
+  $("#fab").innerHTML=active?'<b id="fabTime">'+fmtTime(remaining())+'</b>':'<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>'}
+function renderPill(){renderFab();const p=$("#pill");if(T.state==="idle"||ui.tab==="timer"){p.hidden=true;return}
   p.hidden=false;p.className="pill"+(T.state==="done"?" done":"");
   p.innerHTML='<span class="dot"></span><button id="pillOpen" style="color:inherit;display:flex;gap:8px;align-items:baseline"><span>'+(T.state==="done"?"Pause vorbei":T.state==="pause"?"Pausiert":"Pause")+'</span><b id="pillTime">'+fmtTime(remaining())+'</b></button>'+
     (T.state==="run"?'<button class="x" id="pillAdd">+15 s</button>':'')+'<button class="x" id="pillX" aria-label="Timer beenden">'+(T.state==="done"?"OK":"Stopp")+'</button>';
@@ -491,7 +571,7 @@ function importData(ev){
   const f=ev.target.files&&ev.target.files[0];ev.target.value="";if(!f)return;
   const rd=new FileReader();rd.onload=()=>{let d;try{d=JSON.parse(rd.result)}catch(e){toast("Die Datei ist kein gültiges Backup.");return}
     if(!d||!Array.isArray(d.exercises)){toast("In der Datei wurden keine Übungen gefunden.");return}
-    const clean=d.exercises.filter(e=>e&&e.name).map(e=>({id:/^ex-[\w-]+$/.test(e.id||"")?e.id:"ex-"+uid(),name:String(e.name).slice(0,60),createdAt:+e.createdAt||Date.now(),
+    const clean=d.exercises.filter(e=>e&&e.name).map(e=>({id:/^ex-[\w-]+$/.test(e.id||"")?e.id:"ex-"+uid(),name:String(e.name).slice(0,60),cat:e.cat==="machine"||e.cat==="free"?e.cat:guessCat(e.name),icon:ICONS[e.icon]?e.icon:null,createdAt:+e.createdAt||Date.now(),
       sets:(Array.isArray(e.sets)?e.sets:[]).filter(s=>s&&isFinite(s.w)&&isFinite(s.r)&&isFinite(s.ts)).map(s=>({id:String(s.id||uid()),ts:+s.ts,w:+s.w,r:Math.round(+s.r)}))}));
     confirmSheet("Backup importieren?","Deine aktuellen Daten werden durch "+clean.length+" Übungen aus dem Backup ersetzt.","Ersetzen",()=>{
       const old=exercises.map(e=>e.id);exercises=clean;
@@ -505,6 +585,7 @@ function importData(ev){
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab===ui.tab&&ui.tab==="list"&&ui.detail){ui.detail=null}ui.tab=b.dataset.tab;render();$("#main").scrollTop=0});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(T.state==="run"){if(remaining()<=0){T.state="done";saveT()}else{wakeOn();loop()}}render()}});
 if(T.state==="run"){if(remaining()<=0){T.state="done";saveT()}else loop()}
+{const c=lsGet("satzbuch.cat");if(c==="free"||c==="machine")ui.cat=c}
 init();
 })();
 </script>
