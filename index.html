@@ -601,7 +601,7 @@ function renderWorkouts(){
   const now=new Date();const ws=new Date(now);ws.setHours(0,0,0,0);ws.setDate(ws.getDate()-((ws.getDay()+6)%7));
   const week=list.filter(w=>w.start>=ws.getTime());const ms=new Date(now.getFullYear(),now.getMonth(),1).getTime();const month=list.filter(w=>w.start>=ms);
   const avg=list.length?list.reduce((a,w)=>a+w.end-w.start,0)/list.length:0;
-  const stats=list.length?'<div class="stats"><div class="stat"><b>'+week.length+'×</b><span>Diese Woche · '+fmtDur(week.reduce((a,w)=>a+w.end-w.start,0))+'</span></div><div class="stat"><b>'+month.length+'×</b><span>Diesen Monat</span></div><div class="stat"><b>'+fmtDur(avg)+'</b><span>Ø Dauer</span></div></div>':'';
+  const stats=list.length?'<div class="stats"><div class="stat"><b>'+week.length+'×</b><span>Diese Woche · '+fmtDur(week.reduce((a,w)=>a+w.end-w.start,0))+'</span></div><div class="stat"><b>'+month.length+'×</b><span>Diesen Monat</span></div><div class="stat"><b>'+(avg>=3600000?Math.floor(avg/3600000)+':'+pad(Math.round(avg%3600000/60000))+' h':fmtDur(avg))+'</b><span>Ø Dauer</span></div></div>':'';
   let html='';
   if(!list.length)html='<div class="card empty"><h2>Noch keine Trainings</h2><p>Starte oben ein Training, wenn du ins Gym kommst, und beende es beim Gehen. Hier siehst du dann alle Besuche mit Dauer.</p></div>';
   else{let cur="";
