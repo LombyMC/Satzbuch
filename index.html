@@ -85,11 +85,18 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .row .name{font-weight:600;font-size:17px;overflow-wrap:anywhere}
 .row .meta{font-size:14px;color:var(--muted)}
 .chev{color:var(--muted);font-size:20px;line-height:1}
-.addbar{display:flex;gap:8px}
-.addbar input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:17px}
+.addbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:14px 16px;font-weight:600;font-size:17px;background:var(--accent);color:var(--accent-ink)}
+.addbtn:active{opacity:.85}
+.addbtn span{font-size:22px;line-height:1;font-weight:500}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;padding:12px 16px;font-weight:600;font-size:16px;background:var(--surface-2)}
 .btn.primary{background:var(--accent);color:var(--accent-ink)}
 .btn.rest{background:var(--rest-soft);color:var(--rest)}
+.btn.big{min-height:56px;font-size:17px}
+.btn.timer{background:var(--rest);color:#fff;flex-direction:column;gap:0;line-height:1.15}
+.btn.timer small{font-size:13px;font-weight:600;opacity:.85;display:flex;align-items:center;gap:4px}
+.btn.timer b{font-size:20px;font-variant-numeric:tabular-nums}
+.btn.timer svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.btn.timer:active{opacity:.85}
 .btn.danger{background:var(--danger-soft);color:var(--danger)}
 .btn.block{width:100%}
 .btn:disabled{opacity:.45}
@@ -114,7 +121,7 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .stepper button:active{background:var(--line)}
 .stepper input{width:100%;min-width:0;text-align:center;border:0;background:transparent;font-size:24px;font-weight:700;padding:0;font-variant-numeric:tabular-nums}
 .stepper input:focus{outline:none}
-.actions{display:grid;grid-template-columns:1fr auto;gap:10px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
 .sets{display:flex;flex-direction:column}
 .set{display:grid;grid-template-columns:28px 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -271,7 +278,9 @@ const e1rm=(w,r)=>r<=1?w:w*(1+r/30);
 function byDay(sets){const m=new Map();sets.slice().sort((a,b)=>a.ts-b.ts).forEach(s=>{const k=dayKey(s.ts);if(!m.has(k))m.set(k,[]);m.get(k).push(s)});return m}
 function lastTs(ex){return ex.sets.length?Math.max(...ex.sets.map(s=>s.ts)):0}
 function getEx(id){return exercises.find(e=>e.id===id)}
-function summary(sets){return sets.map(s=>fmtKg(s.w)+"×"+s.r).join(", ")}
+function summary(sets){const out=[];let cur=null;
+  sets.forEach(s=>{if(cur&&cur.w===s.w)cur.r.push(s.r);else{cur={w:s.w,r:[s.r]};out.push(cur)}});
+  return out.map(g=>fmtKg(g.w)+" kg × "+g.r.join(", ")).join(" · ")}
 
 /* ---------- toast & sheet ---------- */
 let toastT;
@@ -302,8 +311,8 @@ function render(fromSnap){
 function renderList(){
   $("#topbar").className="topbar";
   $("#topbar").innerHTML='<h1>Übungen</h1>';
-  $("#main").innerHTML='<div class="stack"><form class="addbar" id="addForm" autocomplete="off"><input id="newName" type="text" placeholder="Neue Übung, z. B. Bankdrücken" maxlength="60" enterkeyhint="done" aria-label="Name der neuen Übung"><button class="btn primary" type="submit">Anlegen</button></form><div id="listBody"></div></div>';
-  $("#addForm").onsubmit=e=>{e.preventDefault();const v=$("#newName").value.trim();if(!v)return;addExercise(v);$("#newName").value=""};
+  $("#main").innerHTML='<div class="stack"><button class="addbtn" id="addBtn"><span>+</span>Übung hinzufügen</button><div id="listBody"></div></div>';
+  $("#addBtn").onclick=addSheet;
   renderListBody();
 }
 function renderListBody(){
@@ -316,13 +325,21 @@ function renderListBody(){
   const list=exercises.slice().sort((a,b)=>(lastTs(b)||b.createdAt)-(lastTs(a)||a.createdAt));
   body.innerHTML='<div class="list">'+list.map(ex=>{
     const m=byDay(ex.sets);const keys=[...m.keys()];const lk=keys[keys.length-1];
-    const meta=lk?fmtDay(m.get(lk)[0].ts)+" · "+summary(m.get(lk)):"Noch kein Satz eingetragen";
+    const meta=lk?summary(m.get(lk)):"Noch kein Satz eingetragen";
     return '<button class="row" data-id="'+ex.id+'"><div class="main"><div class="name">'+esc(ex.name)+'</div><div class="meta num">'+esc(meta)+'</div></div><span class="chev">›</span></button>'}).join("")+'</div>';
   body.querySelectorAll(".row").forEach(r=>r.onclick=()=>openDetail(r.dataset.id));
 }
+function addSheet(){
+  sheet('<h3>Neue Übung</h3><form id="addForm" class="stack" autocomplete="off"><input type="text" id="newName" maxlength="60" placeholder="Name, z. B. Bankdrücken" enterkeyhint="done" aria-label="Name der Übung"><button class="btn primary block" type="submit" id="addOk" disabled>Hinzufügen</button><button class="btn block" type="button" id="cNo">Abbrechen</button></form>',
+  s=>{const inp=s.querySelector("#newName"),ok=s.querySelector("#addOk");
+    inp.oninput=()=>ok.disabled=!inp.value.trim();
+    s.querySelector("#cNo").onclick=closeSheet;
+    s.querySelector("#addForm").onsubmit=e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;if(addExercise(v))closeSheet()};
+    inp.focus()});
+}
 function addExercise(name){
-  if(exercises.some(e=>e.name.toLowerCase()===name.toLowerCase())){toast("„"+name+"“ gibt es schon.");return}
-  const ex={id:"ex-"+uid(),name,createdAt:Date.now(),sets:[]};exercises.push(ex);saveExercise(ex);render();
+  if(exercises.some(e=>e.name.toLowerCase()===name.toLowerCase())){toast("„"+name+"“ gibt es schon.");return false}
+  const ex={id:"ex-"+uid(),name,createdAt:Date.now(),sets:[]};exercises.push(ex);saveExercise(ex);render();return true;
 }
 function openDetail(id){ui.detail=id;ui.pane="today";ui.w="";ui.r="";render();$("#main").scrollTop=0}
 
@@ -346,13 +363,13 @@ function renderDetailParts(full){
   const ref=today.length?today[today.length-1]:(prev?prev[0]:null);
   if(ui.w==="")ui.w=ref?fmtKg(ref.w):"";if(ui.r==="")ui.r=ref?String(ref.r):"";
   let best=-1;const prMap={};ex.sets.slice().sort((a,b)=>a.ts-b.ts).forEach(s=>{if(best>=0&&s.w>best)prMap[s.id]=true;best=Math.max(best,s.w)});
-  const lastHtml=prev?'<div class="card last"><span class="label">Letztes Mal · '+esc(fmtDay(prev[0].ts))+'</span><span class="num" style="font-weight:600">'+esc(summary(prev))+' kg</span></div>':'';
+  const lastHtml=prev?'<div class="card last"><span class="label">Letztes Mal · '+esc(fmtDay(prev[0].ts))+'</span><span class="num" style="font-weight:600">'+esc(summary(prev))+'</span></div>':'';
   const setsHtml=today.length?'<div class="card"><div class="label" style="margin-bottom:4px">Heute · '+today.length+(today.length===1?' Satz':' Sätze')+'</div><div class="sets">'+today.map((s,i)=>'<div class="set"><span class="n num">'+(i+1)+'</span><span class="v num">'+fmtKg(s.w)+' <small>kg</small> × '+s.r+' <small>Wdh.</small></span>'+(prMap[s.id]?'<span class="pr" title="Neues Höchstgewicht">PR</span>':'<span></span>')+'<button class="del" data-del="'+s.id+'" aria-label="Satz '+(i+1)+' löschen">×</button></div>').join("")+'</div></div>':'';
   if(full||!document.getElementById("inW")){
     $("#pane").innerHTML='<div class="stack">'+lastHtml+
     '<div class="card stack"><div class="entry"><div class="field"><span class="label">Gewicht (kg)</span><div class="stepper"><button data-step="w:-2.5" aria-label="2,5 kg weniger">−</button><input id="inW" inputmode="decimal" enterkeyhint="next" value="'+esc(ui.w)+'" placeholder="0" aria-label="Gewicht in kg"><button data-step="w:2.5" aria-label="2,5 kg mehr">+</button></div></div>'+
     '<div class="field"><span class="label">Wiederholungen</span><div class="stepper"><button data-step="r:-1" aria-label="Eine Wiederholung weniger">−</button><input id="inR" inputmode="numeric" enterkeyhint="done" value="'+esc(ui.r)+'" placeholder="0" aria-label="Wiederholungen"><button data-step="r:1" aria-label="Eine Wiederholung mehr">+</button></div></div></div>'+
-    '<div class="actions"><button class="btn primary" id="saveSet">Satz speichern</button><button class="btn rest" id="restBtn">Pause '+fmtTime(settings.rest)+'</button></div></div>'+
+    '<div class="actions"><button class="btn primary big" id="saveSet">Satz speichern</button><button class="btn timer big" id="restBtn"><small><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>Pause starten</small><b>'+fmtTime(settings.rest)+'</b></button></div></div>'+
     '<div id="todaySets">'+setsHtml+'</div></div>';
     $("#inW").oninput=e=>ui.w=e.target.value;$("#inR").oninput=e=>ui.r=e.target.value;
     $("#inR").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();addSet()}};
@@ -399,7 +416,7 @@ function historyHtml(ex){
       pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.v).toFixed(1)+'" r="'+(i===pts.length-1?4.5:2.6)+'" fill="'+(i===pts.length-1?"var(--accent)":"var(--surface)")+'" stroke="var(--accent)" stroke-width="1.6"/>').join("")+
       '<text x="'+L+'" y="'+(H-8)+'" text-anchor="start">'+short(pts[0].ts)+'</text><text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end">'+short(lp.ts)+'</text></svg></div>';
   }else chart='<p class="muted small">Ab zwei Trainingstagen erscheint hier ein Diagramm.</p>';
-  const list='<div class="card"><div class="label" style="margin-bottom:2px">Alle Trainings</div>'+days.slice().reverse().map(([k,ss])=>'<div class="session"><span class="d">'+esc(fmtDay(ss[0].ts))+'</span><span class="s num">'+esc(summary(ss))+' kg</span></div>').join("")+'</div>';
+  const list='<div class="card"><div class="label" style="margin-bottom:2px">Alle Trainings</div>'+days.slice().reverse().map(([k,ss])=>'<div class="session"><span class="d">'+esc(fmtDay(ss[0].ts))+'</span><span class="s num">'+esc(summary(ss))+'</span></div>').join("")+'</div>';
   return '<div class="stack">'+stats+chart+list+'</div>';
 }
 function editSheet(ex){
