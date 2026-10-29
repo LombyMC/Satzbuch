@@ -190,6 +190,27 @@ main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-block:4px c
 .catseg button.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 .catseg button .c{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 7px;font-variant-numeric:tabular-nums}
 .catseg button.on .c{background:var(--accent-soft);color:var(--accent)}
+.gear{color:var(--muted);width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.gear svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wkchip{display:flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 11px;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wkchip i{width:7px;height:7px;border-radius:50%;background:var(--good);display:block}
+.wkcard{display:flex;align-items:center;gap:12px}
+.wkcard .main{flex:1;min-width:0}
+.wkcard .big{font-family:var(--font-display);font-size:30px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.1}
+.wkcard.live{background:var(--accent);color:var(--accent-ink)}
+.wkcard.live .label{color:inherit;opacity:.8}
+.wkcard.live .btn{background:var(--accent-ink);color:var(--accent)}
+.wkstart{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left}
+.wkstart .play{flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center}
+.wkstart .play svg{width:20px;height:20px;fill:currentColor}
+.wklist .item{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
+.wklist .item:last-child{border-bottom:0}
+.wklist .d{font-weight:600}
+.wklist .sub{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.wklist .dur{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.month{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:6px 2px -6px}
+.sheet input[type=date],.sheet input[type=time]{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:17px;width:100%;min-width:0}
+.timegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .addbtn.ghost{background:transparent;color:var(--accent);border:1.5px dashed var(--line)}
 .tabs svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
@@ -221,7 +242,7 @@ ol.howto{margin:6px 0 0;padding-left:20px;color:var(--muted);font-size:15px}
 <nav class="tabs" aria-label="Navigation"><div class="in">
   <button data-tab="list" class="on"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Übungen</button>
   <button data-tab="timer" class="tabtimer" aria-label="Pausentimer"><span class="fab" id="fab"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg></span><span class="lbl">Timer</span></button>
-  <button data-tab="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Einstellungen</button>
+  <button data-tab="workouts"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8.5 14.5h3M8.5 17h6"/></svg>Trainings</button>
 </div></nav>
 <div id="overlay"></div>
 
@@ -238,6 +259,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 /* ---------- state ---------- */
 let exercises=[];            // {id,name,createdAt,sets:[{id,ts,w,r}]}
 let settings={rest:180};
+let workouts={active:null,list:[]};   // list:[{id,start,end}]
 let mode="loading";          // loading | db | local
 let col=null;                // db collection ref
 const ui={tab:"list",detail:null,pane:"today",w:"",r:"",confirm:null,cat:"free"};
@@ -250,10 +272,13 @@ function queue(id,fn){
   });
   queues[id]=p;return p;
 }
-function persistLocal(){lsSet(LS_KEY,{exercises,settings})}
+function persistLocal(){lsSet(LS_KEY,{exercises,settings,workouts})}
 function saveExercise(ex){
   if(mode==="db"){const body={kind:"exercise",name:ex.name,cat:ex.cat,icon:ex.icon||null,createdAt:ex.createdAt,sets:ex.sets};queue(ex.id,()=>col.doc(ex.id).set(body))}
   else persistLocal();
+}
+function saveWorkouts(){
+  if(mode==="db"){const body={kind:"workouts",active:workouts.active,list:workouts.list};queue("workouts",()=>col.doc("workouts").set(body))}else persistLocal();
 }
 function removeExercise(id){
   if(mode==="db")queue(id,()=>col.doc(id).delete());else persistLocal();
@@ -263,7 +288,7 @@ function saveSettings(){
 }
 function startLocal(){
   mode="local";const d=lsGet(LS_KEY);
-  if(d){exercises=(d.exercises||[]).map(e=>Object.assign(e,{cat:e.cat==="machine"||e.cat==="free"?e.cat:guessCat(e.name)}));settings=Object.assign({rest:180},d.settings||{})}
+  if(d){exercises=(d.exercises||[]).map(e=>Object.assign(e,{cat:e.cat==="machine"||e.cat==="free"?e.cat:guessCat(e.name)}));settings=Object.assign({rest:180},d.settings||{});if(d.workouts&&Array.isArray(d.workouts.list))workouts={active:d.workouts.active||null,list:d.workouts.list}}
   render();
 }
 async function init(){
@@ -278,6 +303,7 @@ async function init(){
     const ex=[];let st=null;
     snap.docs.forEach(d=>{const v=d.data();if(!v)return;
       if(d.id==="settings")st=v;
+      else if(d.id==="workouts"&&v.kind==="workouts")workouts={active:v.active||null,list:Array.isArray(v.list)?v.list.slice():[]};
       else if(v.kind==="exercise")ex.push({id:d.id,name:v.name,cat:v.cat==="machine"||v.cat==="free"?v.cat:guessCat(v.name),icon:v.icon||null,createdAt:v.createdAt||0,sets:Array.isArray(v.sets)?v.sets.slice():[]});
     });
     exercises=ex;if(st&&st.rest)settings.rest=st.rest;
@@ -351,7 +377,9 @@ function render(fromSnap){
   }
   if(ui.tab==="list")ui.detail?renderDetail():renderList();
   else if(ui.tab==="timer")renderTimerPage();
+  else if(ui.tab==="workouts")renderWorkouts();
   else renderSettings();
+  decorateTop();
   renderPill();
   if(keepId){const el=document.getElementById(keepId);if(el&&el!==active){el.focus();try{el.setSelectionRange(sel,sel)}catch(e){}}}
 }
@@ -359,7 +387,8 @@ function render(fromSnap){
 function renderList(){
   $("#topbar").className="topbar";
   $("#topbar").innerHTML='<h1>Übungen</h1>';
-  $("#main").innerHTML='<div class="stack"><div class="catseg" role="tablist" id="catSeg"></div><div id="listBody"></div></div>';
+  $("#main").innerHTML='<div class="stack"><div id="wkSlot">'+workoutCard()+'</div><div class="catseg" role="tablist" id="catSeg"></div><div id="listBody"></div></div>';
+  bindWorkoutCard();
   renderListBody();
 }
 function renderListBody(){
@@ -544,9 +573,65 @@ function renderTimerPage(){
   updateTimerViews();
 }
 
+/* ---------- workouts (gym visits) ---------- */
+const gearSvg='<svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
+function fmtClock(ms){const t=Math.max(0,Math.floor(ms/1000));const h=Math.floor(t/3600),m=Math.floor(t%3600/60),sec=t%60;return h+":"+pad(m)+":"+pad(sec)}
+function fmtDur(ms){const m=Math.round(ms/60000);const h=Math.floor(m/60),mm=m%60;return h?h+" Std."+(mm?" "+mm+" Min.":""):mm+" Min."}
+const fmtHM=ts=>{const d=new Date(ts);return pad(d.getHours())+":"+pad(d.getMinutes())};
+function decorateTop(){
+  const tb=$("#topbar");if(!tb||ui.tab==="settings"||ui.detail&&ui.tab==="list")return;
+  if(workouts.active&&ui.tab==="timer"){const c=document.createElement("button");c.className="wkchip";c.innerHTML='<i></i><span class="wkclock">'+fmtClock(Date.now()-workouts.active)+'</span>';c.setAttribute("aria-label","Laufendes Training ansehen");c.onclick=()=>{ui.tab="workouts";render()};tb.appendChild(c)}
+  const g=document.createElement("button");g.className="gear";g.innerHTML=gearSvg;g.setAttribute("aria-label","Einstellungen");
+  g.onclick=()=>{ui.prevTab=ui.tab;ui.tab="settings";render();$("#main").scrollTop=0};tb.appendChild(g);
+}
+function startWorkout(){if(workouts.active)return;workouts.active=Date.now();saveWorkouts();toast("Training gestartet");render()}
+function stopWorkout(){if(!workouts.active)return;const w={id:uid(),start:workouts.active,end:Date.now()};
+  workouts.active=null;if(w.end-w.start>=60000){workouts.list.push(w);toast("Training gespeichert: "+fmtDur(w.end-w.start))}else toast("Training unter 1 Minute, nicht gespeichert");
+  saveWorkouts();render()}
+function exercisesIn(w){const names=[];exercises.forEach(e=>{if(e.sets.some(s=>s.ts>=w.start&&s.ts<=w.end))names.push(e.name)});return names}
+function workoutCard(){
+  if(workouts.active)return '<div class="card wkcard live"><div class="main"><div class="label">Training läuft · seit '+fmtHM(workouts.active)+'</div><div class="big wkclock">'+fmtClock(Date.now()-workouts.active)+'</div></div><button class="btn" id="wkStop">Beenden</button></div>';
+  return '<div class="card"><button class="wkstart" id="wkStart"><span><span class="label">Gym-Besuch</span><br><b style="font-size:18px">Training starten</b></span><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span></button></div>';
+}
+function bindWorkoutCard(){const a=$("#wkStart"),b=$("#wkStop");if(a)a.onclick=startWorkout;
+  if(b)b.onclick=()=>confirmSheet("Training beenden?","Dein Gym-Besuch läuft seit "+fmtDur(Date.now()-workouts.active)+" und wird gespeichert.","Beenden und speichern",stopWorkout)}
+function renderWorkouts(){
+  $("#topbar").className="topbar";$("#topbar").innerHTML='<h1>Trainings</h1>';
+  const list=workouts.list.slice().sort((a,b)=>b.start-a.start);
+  const now=new Date();const ws=new Date(now);ws.setHours(0,0,0,0);ws.setDate(ws.getDate()-((ws.getDay()+6)%7));
+  const week=list.filter(w=>w.start>=ws.getTime());const ms=new Date(now.getFullYear(),now.getMonth(),1).getTime();const month=list.filter(w=>w.start>=ms);
+  const avg=list.length?list.reduce((a,w)=>a+w.end-w.start,0)/list.length:0;
+  const stats=list.length?'<div class="stats"><div class="stat"><b>'+week.length+'×</b><span>Diese Woche · '+fmtDur(week.reduce((a,w)=>a+w.end-w.start,0))+'</span></div><div class="stat"><b>'+month.length+'×</b><span>Diesen Monat</span></div><div class="stat"><b>'+fmtDur(avg)+'</b><span>Ø Dauer</span></div></div>':'';
+  let html='';
+  if(!list.length)html='<div class="card empty"><h2>Noch keine Trainings</h2><p>Starte oben ein Training, wenn du ins Gym kommst, und beende es beim Gehen. Hier siehst du dann alle Besuche mit Dauer.</p></div>';
+  else{let cur="";
+    list.forEach(w=>{const d=new Date(w.start);const mk=d.toLocaleDateString("de-DE",{month:"long",year:"numeric"});
+      if(mk!==cur){if(cur)html+='</div>';html+='<div class="month">'+esc(mk)+'</div><div class="card wklist">';cur=mk}
+      const ex=exercisesIn(w);
+      html+='<button class="item" data-wk="'+w.id+'"><span style="min-width:0"><span class="d">'+esc(d.toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"}))+'</span> <span class="muted small num">'+fmtHM(w.start)+'–'+fmtHM(w.end)+'</span><br><span class="sub">'+(ex.length?esc(ex.join(", ")):"Keine Sätze eingetragen")+'</span></span><span class="dur">'+fmtDur(w.end-w.start)+'</span></button>'});
+    html+='</div>'}
+  $("#main").innerHTML='<div class="stack">'+workoutCard()+stats+html+'</div>';
+  bindWorkoutCard();
+  document.querySelectorAll("[data-wk]").forEach(b=>b.onclick=()=>{const w=workouts.list.find(x=>x.id===b.dataset.wk);if(w)editWorkout(w)});
+}
+function editWorkout(w){
+  const ds=dayKey(w.start);
+  sheet('<h3>Training bearbeiten</h3><form id="wkForm" class="stack"><div><div class="label" style="margin-bottom:6px">Datum</div><input type="date" id="wkDate" value="'+ds+'"></div><div class="timegrid"><div><div class="label" style="margin-bottom:6px">Beginn</div><input type="time" id="wkFrom" value="'+fmtHM(w.start)+'"></div><div><div class="label" style="margin-bottom:6px">Ende</div><input type="time" id="wkTo" value="'+fmtHM(w.end)+'"></div></div><button class="btn primary block" type="submit">Speichern</button><button class="btn danger block" type="button" id="wkDel">Training löschen</button><button class="btn block" type="button" id="cNo">Abbrechen</button></form>',
+  s=>{s.querySelector("#cNo").onclick=closeSheet;
+    s.querySelector("#wkForm").onsubmit=e=>{e.preventDefault();
+      const d=s.querySelector("#wkDate").value,f=s.querySelector("#wkFrom").value,t=s.querySelector("#wkTo").value;
+      if(!d||!f||!t){toast("Bitte Datum, Beginn und Ende ausfüllen.");return}
+      const st=new Date(d+"T"+f).getTime();let en=new Date(d+"T"+t).getTime();if(en<=st)en+=86400000;
+      if(!isFinite(st)||!isFinite(en)){toast("Die Zeit konnte nicht gelesen werden.");return}
+      w.start=st;w.end=en;saveWorkouts();closeSheet();render()};
+    s.querySelector("#wkDel").onclick=()=>{closeSheet();confirmSheet("Training löschen?","Der Eintrag wird aus deiner Liste entfernt. Deine Sätze bleiben erhalten.","Löschen",()=>{workouts.list=workouts.list.filter(x=>x!==w);saveWorkouts();render()})}});
+}
+setInterval(()=>{if(!workouts.active)return;const t=fmtClock(Date.now()-workouts.active);document.querySelectorAll(".wkclock").forEach(el=>{el.textContent=t})},1000);
+
 /* ---------- settings ---------- */
 function renderSettings(){
-  $("#topbar").className="topbar";$("#topbar").innerHTML='<h1>Einstellungen</h1>';
+  $("#topbar").className="topbar sub";$("#topbar").innerHTML='<button class="back" id="setBack">‹ Zurück</button><h1>Einstellungen</h1>';
+  $("#setBack").onclick=()=>{ui.tab=ui.prevTab||"list";ui.prevTab=null;render()};
   const where=mode==="db"?"Deine Daten sind in deinem Claude-Konto gespeichert und nur für dich sichtbar.":"Deine Daten sind nur auf diesem Gerät gespeichert. Mach ab und zu ein Backup, z. B. in die Dateien-App.";
   const total=exercises.reduce((a,e)=>a+e.sets.length,0);
   $("#main").innerHTML='<div class="stack"><div class="card"><div class="srow"><span>Standard-Pause</span><span class="mini"><button id="rMinus" aria-label="15 Sekunden kürzer">−</button><b id="rVal">'+fmtTime(settings.rest)+'</b><button id="rPlus" aria-label="15 Sekunden länger">+</button></span></div>'+
@@ -558,7 +643,7 @@ function renderSettings(){
   $("#exp").onclick=exportData;$("#impFile").onchange=importData;
 }
 async function exportData(){
-  const data=JSON.stringify({app:"Satzbuch",version:1,exportedAt:new Date().toISOString(),settings,exercises},null,1);
+  const data=JSON.stringify({app:"Satzbuch",version:1,exportedAt:new Date().toISOString(),settings,exercises,workouts},null,1);
   const name="satzbuch-backup-"+todayKey()+".json";
   let dl=null;try{dl=await window.claude.use("downloads")}catch(e){}
   if(dl){try{await dl.save({filename:name,data});toast("Backup gespeichert");return}catch(e){if(e&&e.code==="declined")return}}
@@ -576,13 +661,14 @@ function importData(ev){
     confirmSheet("Backup importieren?","Deine aktuellen Daten werden durch "+clean.length+" Übungen aus dem Backup ersetzt.","Ersetzen",()=>{
       const old=exercises.map(e=>e.id);exercises=clean;
       if(d.settings&&d.settings.rest)settings.rest=+d.settings.rest;
+      if(d.workouts&&Array.isArray(d.workouts.list)){workouts={active:workouts.active,list:d.workouts.list.filter(w=>w&&isFinite(w.start)&&isFinite(w.end)&&w.end>w.start).map(w=>({id:String(w.id||uid()),start:+w.start,end:+w.end}))};if(mode==="db")saveWorkouts()}
       if(mode==="db"){old.filter(id=>!clean.some(c=>c.id===id)).forEach(removeExercise);clean.forEach(saveExercise);saveSettings()}else persistLocal();
       toast("Backup importiert");render()})};
   rd.readAsText(f);
 }
 
 /* ---------- wiring ---------- */
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab===ui.tab&&ui.tab==="list"&&ui.detail){ui.detail=null}ui.tab=b.dataset.tab;render();$("#main").scrollTop=0});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ui.prevTab=null;if(b.dataset.tab===ui.tab&&ui.tab==="list"&&ui.detail){ui.detail=null}ui.tab=b.dataset.tab;render();$("#main").scrollTop=0});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(T.state==="run"){if(remaining()<=0){T.state="done";saveT()}else{wakeOn();loop()}}render()}});
 if(T.state==="run"){if(remaining()<=0){T.state="done";saveT()}else loop()}
 {const c=lsGet("satzbuch.cat");if(c==="free"||c==="machine")ui.cat=c}
